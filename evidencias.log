@@ -1,0 +1,155 @@
+Script started on 2026-09-09 14:09:14-03:00 [COMMAND="bash /mnt/c/Users/arthu/AppData/Local/Temp/claude/D--Repositorios-CESAR/69f961a9-06c0-473d-9a55-66be735bcbd8/scratchpad/evidencias_driver.sh" <not executed on terminal>]
+$ date
+Wed Sep  9 14:09:14 -03 2026
+
+$ whoami
+afreis
+
+$ pwd
+/mnt/d/Repositorios/CESAR/escalonamento
+
+$ gcc --version
+gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0
+
+$ git log --oneline
+086d396 (HEAD -> master) motor de simulacao com rate-monotonic e edf, escrita da saida
+7daeb0e leitura e validacao do arquivo de tarefas
+82d8848 estrutura inicial: Makefile, struct de tarefas e validacao de argumentos
+
+======================================================================
+1. BUILD LIMPO
+======================================================================
+$ make clean && make
+rm -f scheduler main.o io.o sim.o rate_afsr.out edf_afsr.out
+gcc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -O2 -g -c -o main.o main.c
+gcc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -O2 -g -c -o io.o io.c
+gcc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -O2 -g -c -o sim.o sim.c
+gcc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -O2 -g -o scheduler main.o io.o sim.o
+
+======================================================================
+2. EXEMPLO DO ENUNCIADO (voo.txt) - RATE
+======================================================================
+$ cat voo.txt
+100
+ATT 20 12 8
+NAV 50 30 15
+
+$ ./scheduler rate voo.txt
+exit=0
+$ cat rate_afsr.out
+EXECUTION BY RATE
+
+[ATT] for 8 units - F
+[NAV] for 12 units - H
+[ATT] for 8 units - F
+[NAV] for 2 units - L
+idle for 10 units
+[ATT] for 8 units - F
+idle for 2 units
+[NAV] for 10 units - H
+[ATT] for 8 units - F
+[NAV] for 5 units - F
+idle for 7 units
+[ATT] for 8 units - F
+idle for 12 units
+
+LOST DEADLINES
+[ATT] 0
+[NAV] 1
+
+COMPLETE EXECUTION
+[ATT] 5
+[NAV] 1
+
+KILLED
+[ATT] 0
+[NAV] 0
+
+$ diff rate_afsr.out esperado_pelo_enunciado.out
+OK: saida identica ao rastro de execucao do enunciado
+
+======================================================================
+3. EXEMPLO DO ENUNCIADO (voo.txt) - EDF
+======================================================================
+$ ./scheduler edf voo.txt
+exit=0
+$ cat edf_afsr.out
+EXECUTION BY EDF
+
+[ATT] for 8 units - F
+[NAV] for 15 units - F
+[ATT] for 8 units - F
+idle for 9 units
+[ATT] for 8 units - F
+idle for 2 units
+[NAV] for 10 units - H
+[ATT] for 8 units - F
+[NAV] for 5 units - F
+idle for 7 units
+[ATT] for 8 units - F
+idle for 12 units
+
+LOST DEADLINES
+[ATT] 0
+[NAV] 0
+
+COMPLETE EXECUTION
+[ATT] 5
+[NAV] 2
+
+KILLED
+[ATT] 0
+[NAV] 0
+
+======================================================================
+4. CASOS INVALIDOS: exit != 0, stdout vazio, nenhum .out criado
+======================================================================
+[sem argumentos] exit=1 stdout='' out_criado=nao
+  stderr: scheduler: numero incorreto de argumentos
+uso: ./scheduler <rate|edf> <arquivo>
+[1 argumento] exit=1 stdout='' out_criado=nao
+  stderr: scheduler: numero incorreto de argumentos
+uso: ./scheduler <rate|edf> <arquivo>
+[algoritmo invalido] exit=1 stdout='' out_criado=nao
+  stderr: scheduler: algoritmo invalido 'foo' (use rate ou edf)
+[arquivo inexistente] exit=1 stdout='' out_criado=nao
+  stderr: scheduler: nao foi possivel abrir o arquivo '/mnt/c/Users/arthu/AppData/Local/Temp/claude/D--Repositorios-CESAR/69f961a9-06c0-473d-9a55-66be735bcbd8/scratchpad/naoexiste.txt'
+[tempo total nao numerico] exit=1 stdout='' out_criado=nao
+  stderr: scheduler: tempo total invalido: 'abc'
+[campo faltando] exit=1 stdout='' out_criado=nao
+  stderr: scheduler: linha 2: campo faltando
+[valor nao numerico] exit=1 stdout='' out_criado=nao
+  stderr: scheduler: linha 2: periodo invalido: 'abc'
+[valor nao positivo] exit=1 stdout='' out_criado=nao
+  stderr: scheduler: linha 2: burst invalido: '0'
+[deadline maior que periodo] exit=1 stdout='' out_criado=nao
+  stderr: scheduler: linha 2: tarefa 'ATT' viola C <= D <= P (C=5 D=20 P=10)
+[burst maior que deadline] exit=1 stdout='' out_criado=nao
+  stderr: scheduler: linha 2: tarefa 'ATT' viola C <= D <= P (C=15 D=12 P=20)
+
+======================================================================
+5. SIMULACAO FINALIZANDO COM TAREFA VIVA (KILLED)
+======================================================================
+$ cat killed.txt
+10
+X 20 20 15
+$ ./scheduler rate killed.txt
+exit=0
+EXECUTION BY RATE
+
+[X] for 10 units - K
+
+LOST DEADLINES
+[X] 0
+
+COMPLETE EXECUTION
+[X] 0
+
+KILLED
+[X] 1
+
+======================================================================
+FIM DA CAPTURA
+======================================================================
+
+Script done on 2026-09-09 14:09:15-03:00 [COMMAND_EXIT_CODE="0"]
