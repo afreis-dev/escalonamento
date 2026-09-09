@@ -1,0 +1,4 @@
+*.o
+scheduler
+rate_afsr.out
+edf_afsr.out
