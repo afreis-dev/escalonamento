@@ -15,5 +15,11 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    TaskSet ts;
+    if (read_taskset(argv[2], &ts) != 0) {
+        return 1;
+    }
+
+    free_taskset(&ts);
     return 0;
 }
