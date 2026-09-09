@@ -1,6 +1,6 @@
 CC := gcc
 CFLAGS := -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -O2 -g
-SRC := main.c io.c
+SRC := main.c io.c sim.c
 OBJ := $(SRC:.c=.o)
 
 all: scheduler

@@ -20,6 +20,13 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    Algorithm alg = strcmp(argv[1], "rate") == 0 ? ALG_RATE : ALG_EDF;
+
+    char out_path[MAX_NAME + 16];
+    snprintf(out_path, sizeof(out_path), "%s_%s.out", argv[1], LOGIN);
+
+    int rc = run_simulation(&ts, alg, out_path);
     free_taskset(&ts);
-    return 0;
+
+    return rc == 0 ? 0 : 1;
 }
